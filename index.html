@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARB Studio</title><style>
+:root{color-scheme:dark;--bg:#080e18;--panel:#111c2b;--line:#29394f;--txt:#eef5ff;--muted:#9eafc8;--a:#59e1bd;--b:#8fa5ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0,#1c3451,transparent 38%),var(--bg);color:var(--txt);font-family:system-ui}
+header{padding:18px 14px}.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--a),var(--b));color:#07131a;font-weight:950}
+h1{font-size:22px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:4px}main{padding:8px 12px;display:grid;gap:12px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.pill{font-size:11px;color:var(--a);background:#173b35;padding:5px 9px;border-radius:20px}
+select{width:100%;background:#0a1422;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}textarea{width:100%;min-height:260px;background:#0a1422;color:#e0edff;border:0;padding:14px;font:14px/1.9 monospace;direction:ltr;text-align:left}
+.tools,.actions{display:flex;gap:8px;flex-wrap:wrap;padding:11px}button{background:#1b2a41;color:var(--txt);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-weight:750}button.primary{background:var(--a);color:#07131a;flex:1}
+#out{padding:13px;min-height:60px;white-space:pre-wrap;font:13px/1.8 monospace;direction:ltr;text-align:left;color:#c9f8e9}iframe{display:none;width:100%;height:330px;border:0;background:white}.hint{padding:13px;color:var(--muted);font-size:12px;line-height:1.8}
+</style></head><body><header><div class="brand"><div class="logo">ARB</div><div><h1>ARB Studio</h1><div class="sub">بيئة تطوير عربية — مواقع، تطبيقات، ألعاب 2D</div></div></div></header>
+<main><section class="panel"><div class="head"><b>المشروع والكود</b><span class="pill">ARB Code</span></div><div class="tools"><select id="kind"><option value="code">برنامج ARB</option><option value="web">موقع إلكتروني</option><option value="app">واجهة تطبيق</option><option value="game">لعبة 2D</option></select></div>
+<textarea id="code" spellcheck="false"># برنامج ARB
+متغير الاسم = "أحمد"
+اطبع("أهلاً يا " + الاسم)
+عنوان "موقعي الأول"
+نص "اكتب أفكارك وابدأ بناء مشروعك"</textarea>
+<div class="actions"><button class="primary" id="run">▶ تشغيل ومعاينة</button><button id="example">مثال جاهز</button><button id="clear">مسح</button></div></section>
+<section class="panel"><div class="head"><b>النتيجة والمعاينة</b><span id="status" class="pill">جاهز</span></div><div id="out">اختار نوع المشروع واضغط تشغيل.</div><div id="hint" class="hint">النسخة الأولى تشغّل أمثلة بسيطة وتعاين صفحات ويب وواجهات تطبيق. محرك الألعاب وتصدير APK للمشاريع هنضيفهم في المرحلة التالية.</div><iframe id="preview" sandbox="allow-scripts"></iframe></section></main>
+<script>
+const defs={
+code:'# برنامج ARB\nمتغير الاسم = "أحمد"\nاطبع("أهلاً يا " + الاسم)',
+web:'عنوان "موقعي الأول"\nنص "اكتب أفكارك وابدأ بناء مشروعك"\nزر "ابدأ الآن"',
+app:'عنوان "تطبيقي"\nنص "أول واجهة تطبيق من ARB"\nزر "ابدأ"\nزر "الإعدادات"',
+game:'اسم_اللعبة "لعبتي الأولى"\nلاعب 80 250\nأرض 330\nسرعة 5\nقفز 12'};
+const code=document.getElementById('code'),kind=document.getElementById('kind'),out=document.getElementById('out'),status=document.getElementById('status'),preview=document.getElementById('preview'),hint=document.getElementById('hint');
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function run(){try{if(kind.value==='code'){let lines=code.value.split('\n'),res=[];for(let [i,l] of lines.entries()){let s=l.trim();if(!s||s.startsWith('#')||s.startsWith('متغير ')||s.startsWith('لو ')||s==='وإلا:')continue;let m=s.match(/^اطبع\("(.*)"\)$/);if(m)res.push(m[1]);else throw Error('أمر غير مدعوم في السطر '+(i+1)+': '+s)}out.textContent=res.join('\n')||'تم التنفيذ بدون مخرجات.';preview.style.display='none';hint.style.display='block';status.textContent='اكتمل';return}
+let title='مشروعي',text=[],buttons=[];for(let [i,l] of code.value.split('\n').entries()){let s=l.trim();if(!s||s.startsWith('#'))continue;let m=s.match(/^(عنوان|اسم_اللعبة|اسم_التطبيق)\s+"(.*)"$/);if(m){title=m[2];continue}m=s.match(/^(نص|زر)\s+"(.*)"$/);if(m){(m[1]==='نص'?text:buttons).push(m[2]);continue}if(kind.value==='game'&&/^(لاعب|أرض|سرعة|قفز)\s+[-\d.]+/.test(s))continue;throw Error('أمر غير مفهوم في السطر '+(i+1)+': '+s)}
+let html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui;background:#101827;color:white;padding:28px}h1{font-size:30px}p{line-height:1.8}button{background:#59e1bd;border:0;border-radius:12px;padding:12px;margin:6px}</style><h1>'+esc(title)+'</h1>'+text.map(t=>'<p>'+esc(t)+'</p>').join('')+buttons.map(t=>'<button>'+esc(t)+'</button>').join('')+'</html>';
+preview.srcdoc=html;preview.style.display='block';hint.style.display='none';out.textContent=kind.value==='game'?'تم فحص أوامر اللعبة. محرك الحركة سيضاف في المرحلة التالية.':'تم إنشاء معاينة المشروع.';status.textContent='اكتمل';
+}catch(e){out.textContent='خطأ: '+e.message;status.textContent='خطأ'}}
+kind.onchange=()=>{code.value=defs[kind.value];preview.style.display='none';hint.style.display='block';out.textContent='تم اختيار نوع المشروع.';status.textContent='جاهز'};
+document.getElementById('run').onclick=run;document.getElementById('example').onclick=()=>code.value=defs[kind.value];document.getElementById('clear').onclick=()=>{code.value='';out.textContent='تم المسح'};
+</script></body></html>
